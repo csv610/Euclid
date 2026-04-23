@@ -1,0 +1,2 @@
+#define DATA_DIR "@DATA_DIR@"
+#define TMP_DIR "@TMP_DIR@"

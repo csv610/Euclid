@@ -1,0 +1,4 @@
+add_executable(euclid_feature_detection main.cpp)
+target_include_directories(euclid_feature_detection PRIVATE ${CMAKE_BINARY_DIR}/app)
+target_link_libraries(euclid_feature_detection PRIVATE Euclid::Euclid)
+set_target_properties(euclid_feature_detection PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/apps)

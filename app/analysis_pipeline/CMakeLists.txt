@@ -1,0 +1,4 @@
+add_executable(euclid_analysis_pipeline main.cpp)
+target_include_directories(euclid_analysis_pipeline PRIVATE ${CMAKE_BINARY_DIR}/app)
+target_link_libraries(euclid_analysis_pipeline PRIVATE Euclid::Euclid)
+set_target_properties(euclid_analysis_pipeline PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/apps)

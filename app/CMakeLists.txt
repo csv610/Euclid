@@ -1,0 +1,27 @@
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/config.h
+)
+
+add_subdirectory(io)
+add_subdirectory(geometry)
+add_subdirectory(topology)
+add_subdirectory(distance)
+add_subdirectory(parameterization)
+add_subdirectory(segmentation)
+add_subdirectory(view_selection)
+add_subdirectory(descriptor)
+add_subdirectory(primitive)
+add_subdirectory(bounding)
+add_subdirectory(stats)
+add_subdirectory(meshutil)
+add_subdirectory(commute)
+add_subdirectory(mesh_processing)
+add_subdirectory(surface_recon)
+add_subdirectory(shape_matching)
+add_subdirectory(feature_detection)
+add_subdirectory(batch_io)
+add_subdirectory(analysis_pipeline)
+add_subdirectory(render)
+add_subdirectory(ttk)
+add_subdirectory(serialize)

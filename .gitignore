@@ -1,0 +1,9 @@
+# directories
+.vscode/
+.vs/
+build/
+x64/
+docs/html
+
+# files
+CMakeSettings.json
