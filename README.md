@@ -1,102 +1,81 @@
-# Welcome to Euclid
+# Euclid (Mac M1 Port)
 
-- [GitHub repo](https://github.com/unclejimbo/Euclid)
-- [Latest documentation](https://unclejimbo.github.io/Euclid/)
+This repository is a **port of the original [Euclid](https://github.com/unclejimbo/Euclid) library** to Apple Silicon (Mac M1/M2/M3) and macOS.
+
+## Important Disclaimer
+
+**I take no credit whatsoever for the original researcher's work.** All foundational research, algorithms, and the core implementation of this library were developed by [unclejimbo](https://github.com/unclejimbo) and the original contributors. Please refer to the [original repository](https://github.com/unclejimbo/Euclid) and [official documentation](https://unclejimbo.github.io/Euclid/) for the primary source of truth.
+
+## Mac M1 Port Contributions
+
+The primary focus of this fork is to ensure that Euclid remains accessible and functional on modern Apple Silicon hardware. The contributions made in this port include:
+
+- **Apple Silicon Compatibility:** Resolved architecture-specific issues to ensure seamless compilation and execution on ARM64 (M1/M2/M3 chips).
+- **Build System Updates:** Updated the CMake configuration to correctly detect and link dependencies installed via Homebrew on macOS.
+- **Dependency Management:** Fine-tuned dependency resolution for macOS-specific paths (Boost, CGAL, Eigen, Libigl, etc.).
+- **Performance Verification:** Verified the library's functionality and performance within the macOS ecosystem.
+
+---
 
 ## Introduction
 
-Euclid is a header only library for geometry processing and shape analysis.
+Euclid is a header-only library for geometry processing and shape analysis. It contains utilities and algorithms that extend and cooperate with popular libraries like Eigen (libigl) and CGAL.
 
-It contains some utilities and algorithms which extend and cooperate with other popular libraries around there, like Eigen(libigl), CGAL, to name a few.
-
-The purpose of Euclid is not to replace any of the above packages, but to glue things together as well as to provide more algorithms which do not appear in those libraries.
+The purpose of Euclid is to glue these packages together and provide additional algorithms that are not available in those libraries.
 
 ## Dependencies
 
-Different packages in Euclid may require a different set of dependencies. Although some are dependency free (like the IO module), but most of them rely on the following packages, which are also marked as 'REQUIRED' if you configure using CMake, including
+Different packages in Euclid may require different sets of dependencies. While some are dependency-free (like the IO module), most rely on:
 
 - [Boost](https://www.boost.org/)
 - [CGAL](https://www.cgal.org/index.html)
 - [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)
 - [Libigl](http://libigl.github.io/libigl/)
 
-Additional dependencies are required by some packages, including
+Additional dependencies:
+- [Spectra](https://spectralib.org/) (eigenvalue problems)
+- [Embree](http://embree.github.io) (CPU ray tracing)
+- [Vulkan](https://www.vulkan.org/) (headless GPU rendering)
+- [TTK](https://topology-tool-kit.github.io/) (topological shape analysis)
+- [Cereal](http://uscilab.github.io/cereal/index.html) (serialization)
 
-- [Spectra](https://spectralib.org/) for solving eigenvalue problems.
-- [Embree](http://embree.github.io) for fast cpu ray tracing.
-- [Vulkan](https://www.vulkan.org/) for headless gpu rendering.
-- [TTK](https://topology-tool-kit.github.io/) for topological shape analysis.
-- [Cereal](http://uscilab.github.io/cereal/index.html) for serialization.
-
-Make sure you properly compile and link to the above libraries when they are used. Also, Euclid uses features in the C++17 standard, so you'll need a C++17 enabled compiler.
+**MacOS Note:** These can be easily installed via [Homebrew](https://brew.sh/):
+```bash
+brew install boost cgal eigen libigl
+```
 
 ## Installation
 
-Since it's a header only library, it is not mandatory to configure this project with CMake. Although be sure to configure other dependencies properly, as some of them are not header only.
+Euclid is a header-only library, so CMake configuration is not strictly mandatory, but it is recommended for managing dependencies.
 
-If you are using CMake, there are two ways to go:
+### Using CMake
 
-First you could use the [find script](https://github.com/unclejimbo/Euclid/blob/dev/cmake/Modules/FindEuclid.cmake) shipped with Euclid and configure other dependencies manually like below. This is preferable if you only need parts of the headers and do not wish to configure all the dependencies.
+1. **Option A: find_package**
+   ```cmake
+   find_package(Euclid)
+   target_include_directories(your-target Euclid_INCLUDE_DIR)
+   ```
 
-```cmake
-find_package(Euclid)
-target_include_directories(your-target Euclid_INCLUDE_DIR)
-// other dependencies, e.g. Eigen
-```
-
-Otherwise, you could configure Euclid using CMake first. It will output an EuclidConfig.cmake file in the build tree for you to use. You can set the variable `Euclid_DIR` to the path containing this file and then in your own CMakeLists.txt you could do
-
-```cmake
-find_package(Euclid)
-target_link_libraries(your-target Euclid::Euclid)
-```
+2. **Option B: Config Mode**
+   Configure Euclid first to generate `EuclidConfig.cmake`. Then:
+   ```cmake
+   find_package(Euclid)
+   target_link_libraries(your-target Euclid::Euclid)
+   ```
 
 ## Getting Started
 
-Here's an example which reads a mesh file, converts it to a CGAL::Surface_mesh data structure, computes its discrete gaussian curvatures and ouput the values into mesh colors.
-
 ```cpp
-#include <vector>
-#include <CGAL/Simple_cartesian.h>
-#include <CGAL/Surface_mesh.h>
 #include <Euclid/IO/OffIO.h>
-#include <Euclid/IO/PlyIO.h>
 #include <Euclid/MeshUtil/CGALMesh.h>
 #include <Euclid/Geometry/TriMeshGeometry.h>
-#include <Euclid/Util/Color.h>
-
-using Kernel = CGAL::Simple_cartesian<float>;
-using Point_3 = Kernel::Point_3;
-using Mesh = CGAL::Surface_mesh<Point_3>;
-
-int main()
-{
-    // Read triangle mesh into buffers
-    std::vector<float> positions;
-    std::vector<unsigned> indices;
-    Euclid::read_off<3>("Euclid_root/data/bumpy.off", positions, nullptr, &indices, nullptr);
-
-    // Generate a CGAL::Surface_mesh
-    Mesh mesh;
-    Euclid::make_mesh<3>(mesh, positions, indices);
-
-    // Compute gaussian curvatures
-    auto curvatures = Euclid::gaussian_curvatures(mesh);
-
-    // Turn curvatures into colors and output to a file
-    std::vector<unsigned char> colors;
-    Euclid::colormap(igl::COLOR_MAP_TYPE_JET, curvatures, colors, true);
-    Euclid::write_ply<3>(
-        "outdir/bumpy.ply", positions, nullptr, nullptr, &indices, &colors);
-}
+// ... see examples/ for full usage
 ```
 
 ## Examples
 
-See the [examples](https://github.com/unclejimbo/Euclid/tree/dev/examples) folder for more tutorials. However, many modules are not covered yet. For a more complete example, you could check the [test cases](https://github.com/unclejimbo/Euclid/tree/dev/test) to see the usage of most functions and classes. More information on how to run the tests could be found [here](https://codedocs.xyz/unclejimbo/Euclid/md_docs_runtest.html).
+Check the [examples](https://github.com/csv610/Euclid/tree/master/examples) folder for tutorials and the [test cases](https://github.com/csv610/Euclid/tree/master/test) for complete usage of functions and classes.
 
 ## License
 
-MIT for code not related to any third-party libraries.
-
-Otherwise it should follow whatever license the third-party libraries require.
+MIT for code not related to third-party libraries. Otherwise, it follows the license requirements of the respective third-party libraries.
